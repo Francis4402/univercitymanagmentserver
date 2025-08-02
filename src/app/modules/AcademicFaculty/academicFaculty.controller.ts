@@ -2,6 +2,8 @@ import httpStatus from 'http-status';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { AcademicFacultyServices } from './academicFaculty.service';
+import AppError from '../../errors/AppError';
+import { AcademicFaculty } from './academicFaculty.model';
 
 const createAcademicFaculty = catchAsync(async (req, res) => {
   const result = await AcademicFacultyServices.createAcademicFacultyIntoDB(
@@ -45,9 +47,19 @@ const getSingleAcademicFaculty = catchAsync(async (req, res) => {
 });
 
 const updateAcademicFaculty = catchAsync(async (req, res) => {
-  const { facultyId } = req.params;
+  const { id } = req.params;
+
+  if (!id) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Faculty ID is required');
+  }
+
+  const existingFaculty = await AcademicFaculty.findById(id);
+  if (!existingFaculty) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Academic faculty not found');
+  }
+
   const result = await AcademicFacultyServices.updateAcademicFacultyIntoDB(
-    facultyId,
+    id,
     req.body,
   );
 
